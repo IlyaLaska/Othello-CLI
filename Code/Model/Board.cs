@@ -96,7 +96,8 @@ public class Board
                      board[tempCoords[1], tempCoords[0]].belongsToPlayer == currentPlayer ||
                      board[tempCoords[1], tempCoords[0]].belongsToPlayer == PlayerEnum.blackHole)
                 {
-                    if (hasEnemies == 1 && board[tempCoords[1], tempCoords[0]].belongsToPlayer == currentPlayer)
+                    if (hasEnemies == 1 && board[tempCoords[1], tempCoords[0]].belongsToPlayer == currentPlayer ||
+                        hasEnemies == 1 && board[tempCoords[1], tempCoords[0]].belongsToPlayer == PlayerEnum.blackHole)
                     {
                         hasEnemies = 0;
                     }

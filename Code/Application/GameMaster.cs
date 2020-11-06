@@ -90,19 +90,19 @@ class GameMaster
         }
         Game.gameEnded += gameEndHandler;
         Game.nextMove += nextMoveHandler;
-        game.InitGame();
+        game.InitGame(blackHoleCoords);
         //Can reference game from here
-        game.SetBlackHole(blackHoleCoords);
+        //game.SetBlackHole(blackHoleCoords);
         //Ask player to select next move
         //
         //make game calculate it
         if(testerColour == PlayerEnum.black)
         {
             //Console.WriteLine("Hole: [{0}]", string.Join(", ", game.validMovesAndDirsForThisTurn));
-            tester.UpdateMoves(game.validMovesAndDirsForThisTurn);
+            tester.UpdateMoves(game.validMovesAndDirsForThisTurn, game.haveToSendPass);
         } else if (testerColour == PlayerEnum.white)
         {
-            bot.UpdateMoves(game.validMovesAndDirsForThisTurn);
+            bot.UpdateMoves(game.validMovesAndDirsForThisTurn, game.haveToSendPass);
         }
         game.PlayRound();
     }
@@ -156,7 +156,8 @@ class GameMaster
 
     static public void nextMoveHandler()
     {
-        game.currentPlayer.UpdateMoves(game.validMovesAndDirsForThisTurn);
+        game.currentPlayer.UpdateMoves(game.validMovesAndDirsForThisTurn, game.haveToSendPass);
+        game.haveToSendPass = false;
         game.PlayRound();
     }
 

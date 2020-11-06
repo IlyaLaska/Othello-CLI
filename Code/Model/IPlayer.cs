@@ -7,5 +7,5 @@ public interface IPlayer
     PlayerEnum color { get; set; }
     int[] currentTurnCoords { get; set; }
 
-    void UpdateMoves(int[][] possibleMoveCoords);
+    void UpdateMoves(int[][] possibleMoveCoords, bool moveSkipped);
 }

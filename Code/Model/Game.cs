@@ -12,7 +12,8 @@ public class Game
     public int moveCounter = 0;
     public bool gameIsOver = false;
     public IPlayer currentPlayer;
-    bool playerSkippedMove = false;
+    public bool playerSkippedMove = false;
+    public bool haveToSendPass = false;
 
     public delegate void GetValidMovesListEvent();
     public static event GetValidMovesListEvent getValidMovesListEvent;
@@ -31,9 +32,10 @@ public class Game
         currentPlayer = black;
     }
 
-    public void InitGame()
+    public void InitGame(int[] blackHoleCoords)
     {
         gameBoard.InitBoard();
+        SetBlackHole(blackHoleCoords);
         UpdateValidMovesList();
     }
 
@@ -41,7 +43,15 @@ public class Game
     {
         //get coordinates of next move
         List<int[]> takenCoordsAndDirections = GetMoveFromPlayer();
-        if (takenCoordsAndDirections == null) return;
+        //Console.WriteLine("Taken: " + takenCoordsAndDirections.Count);
+        if (takenCoordsAndDirections == null)//skipped move
+        {
+            ChangePlayer();
+            UpdateValidMovesList();
+
+            nextMove?.Invoke();
+            return;
+        }
         int beatPiecesCount = gameBoard.UpdateBeatPieces(takenCoordsAndDirections, currentPlayer);
         UpdateScore(beatPiecesCount);
 
@@ -70,9 +80,10 @@ public class Game
             // game might be over, no available turns
             if(!playerSkippedMove)//first time a player skips
             {
+                haveToSendPass = true;
                 playerSkippedMove = true;
-                ChangePlayer();
-                UpdateValidMovesList();
+                //ChangePlayer();
+                //UpdateValidMovesList();
             } else
             {
                 gameEnded();

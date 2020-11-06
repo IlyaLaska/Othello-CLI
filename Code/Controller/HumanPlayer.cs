@@ -12,16 +12,23 @@ public class HumanPlayer : IPlayer
     public int score { get; set; }
     public PlayerEnum color { get; set; }
     public int[] currentTurnCoords { get; set; }
-    public void UpdateMoves(int[][] possibleMoveCoords) {
+    public void UpdateMoves(int[][] possibleMoveCoords, bool movePassed) {
+        //Console.WriteLine("Moves for Human");
         //foreach (int[] movee in possibleMoveCoords)
         //{
-        //    Console.WriteLine( (char) (movee[0] + 65) + (movee[1] + 1));
+        //    Console.WriteLine((char)(movee[0] + 65) + "" + (movee[1] + 1));
         //}
         //Get from console
         string move = Console.ReadLine();
-        int[] moveArr = ConvertMoveToArray(move);
-        //Console.WriteLine(moveArr[0] + ":::" + moveArr[1]);
-        this.currentTurnCoords = possibleMoveCoords[0];
+        if (move == "pass")
+        {
+            this.currentTurnCoords = null;
+        } else
+        {
+            int[] moveArr = ConvertMoveToArray(move);
+            //Console.WriteLine("Move: " + moveArr[0] + ":" + moveArr[1]);
+            this.currentTurnCoords = moveArr;
+        }   
     }
     int[] ConvertMoveToArray(string move)
     {

@@ -14,13 +14,22 @@ public class CPUPlayer : IPlayer
     public PlayerEnum color { get; set; }
     public int[] currentTurnCoords { get; set; }
 
-    public void UpdateMoves(int[][] validMoves)
+    public void UpdateMoves(int[][] validMoves, bool skipped)
     {
+        //Console.WriteLine("Moves for CPU");
+        //foreach (int[] movee in validMoves)
+        //{
+        //    Console.WriteLine((char)(movee[0] + 65) +""+ (movee[1] + 1));
+        //}
+        if (skipped)
+        {
+            Console.WriteLine("pass");
+            return;
+        }
         System.Random random = new System.Random();
         int move = random.Next(0, validMoves.Length);
         this.currentTurnCoords = new int[] { validMoves[move][0], validMoves[move][1] };
-        Console.WriteLine((char)(this.currentTurnCoords[0] + 65) + "" + (this.currentTurnCoords[1] + 1));
-        //Console.WriteLine("r");
+        Console.WriteLine((char)(currentTurnCoords[0] + 65) + "" + (currentTurnCoords[1] + 1));
     }
 
 }
