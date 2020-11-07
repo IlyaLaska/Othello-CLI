@@ -6,6 +6,7 @@ public class Board
     public int boardLength = 8;
     public BoardSquare[,] board;
 
+
     public delegate void BoardUpdateEvent();
     public static event BoardUpdateEvent boardUpdateEvent;
 
@@ -25,18 +26,18 @@ public class Board
         }
 
         //Add starting Pieces
-        this.board[3, 3].belongsToPlayer = PlayerEnum.white;
-        this.board[4, 4].belongsToPlayer = PlayerEnum.white;
+        this.board[3, 3].belongsToPlayer = PieceEnum.white;
+        this.board[4, 4].belongsToPlayer = PieceEnum.white;
 
-        this.board[3, 4].belongsToPlayer = PlayerEnum.black;
-        this.board[4, 3].belongsToPlayer = PlayerEnum.black;
+        this.board[3, 4].belongsToPlayer = PieceEnum.black;
+        this.board[4, 3].belongsToPlayer = PieceEnum.black;
 
         boardUpdateEvent?.Invoke();
     }
 
     public int[][] GetValidMovesList(IPlayer currPlayer)
     {
-        PlayerEnum currentPlayer = currPlayer.color;
+        PieceEnum currentPlayer = currPlayer.color;
 
         HashSet<int[]> validMovesList = new HashSet<int[]>();
         for (int i = 0; i < boardLength; i++)
@@ -53,7 +54,7 @@ public class Board
     }
 
 
-    private HashSet<int[]> GetValidMovesForAPiece(int[] boardSquareCoordinates, PlayerEnum currentPlayer)
+    private HashSet<int[]> GetValidMovesForAPiece(int[] boardSquareCoordinates, PieceEnum currentPlayer)
     {
         int[][] dirs = new int[8][];
 
@@ -78,45 +79,34 @@ public class Board
         return validMovesList;
     }
 
-    public int[] GetSuccesfulMoveInDirection(int[] boardSquareCoordinates, int[] direction, PlayerEnum currentPlayer)
+    private int[] GetSuccesfulMoveInDirection(int[] boardSquareCoordinates, int[] direction, PieceEnum currentPlayer)
     {
-        int hasEnemies = 0;
-        bool reachedNullOrAlly = false;
+        int hasBeatableEnemies = 0;
         int x = direction[0];
         int y = direction[1];
         int[] tempCoords = (int[])boardSquareCoordinates.Clone();
-        while (!reachedNullOrAlly)
+        
+        //move to next checked square
+        tempCoords[1] += x;
+        tempCoords[0] += y;
+        while (IsInRange(tempCoords[0]) && IsInRange(tempCoords[1]))//while inside board borders
         {
+            if (board[tempCoords[1], tempCoords[0]].belongsToPlayer == currentPlayer.GetOpponent())//found opponent
+            {
+                hasBeatableEnemies = 1;
+            }
+            else if (hasBeatableEnemies == 1 && board[tempCoords[1], tempCoords[0]].belongsToPlayer == PieceEnum.none)//there are beatable opponents
+            {
+                return new int[] { 1, tempCoords[0], tempCoords[1], x, y };
+            }
+            else if (board[tempCoords[1], tempCoords[0]].belongsToPlayer != currentPlayer.GetOpponent())//found no enemies, reached dead end
+            {
+                break;
+            }
             tempCoords[1] += x;
             tempCoords[0] += y;
-
-            if (IsInRange(tempCoords[0]) && IsInRange(tempCoords[1]))
-            {
-                if (board[tempCoords[1], tempCoords[0]].belongsToPlayer == PlayerEnum.none ||
-                     board[tempCoords[1], tempCoords[0]].belongsToPlayer == currentPlayer ||
-                     board[tempCoords[1], tempCoords[0]].belongsToPlayer == PlayerEnum.blackHole)
-                {
-                    if (hasEnemies == 1 && board[tempCoords[1], tempCoords[0]].belongsToPlayer == currentPlayer ||
-                        hasEnemies == 1 && board[tempCoords[1], tempCoords[0]].belongsToPlayer == PlayerEnum.blackHole)
-                    {
-                        hasEnemies = 0;
-                    }
-                    reachedNullOrAlly = true;
-
-                }
-                else
-                {
-                    hasEnemies = 1;
-                }
-            }
-            else
-            {
-                hasEnemies = 0;
-                reachedNullOrAlly = true;
-            }
-
         }
-        return new int[] { hasEnemies, tempCoords[0], tempCoords[1], x, y };
+        return new int[] { 0, tempCoords[0], tempCoords[1], x, y };//no beatable enemies found
     }
 
     public bool IsInRange(int value)
@@ -126,23 +116,23 @@ public class Board
 
     public int UpdateBeatPieces(List<int[]> validMoves, IPlayer currentPlayer)
     {
-        PlayerEnum currentTurn = currentPlayer.color;
+        PieceEnum currentTurn = currentPlayer.color;
         int changedPieces = 0;
 
         foreach (var XYDirection in validMoves)
         {
-            if (currentTurn == PlayerEnum.black)
+            if (currentTurn == PieceEnum.black)
             {
-                ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PlayerEnum.white, ref changedPieces);
+                ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.white, ref changedPieces);
             }
-            else ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PlayerEnum.black, ref changedPieces);
+            else ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.black, ref changedPieces);
         }
 
         boardUpdateEvent?.Invoke();
         return changedPieces;
     }
 
-    public void ChangePieces(int coordX, int coordY, int x, int y, PlayerEnum colorCurrent, PlayerEnum colorEnemy, ref int changed)
+    public void ChangePieces(int coordX, int coordY, int x, int y, PieceEnum colorCurrent, PieceEnum colorEnemy, ref int changed)
     {
         board[coordY, coordX].belongsToPlayer = colorCurrent;
         while (board[coordY - x, coordX - y].belongsToPlayer == colorEnemy)
@@ -152,7 +142,25 @@ public class Board
             board[coordY, coordX].belongsToPlayer = colorCurrent;
             changed++;
         }
+    }
 
+    public int MakeMoveGetScore(IPlayer currentPlayer, int[][] validMovesAndDirs)
+    {
+        List<int[]> takenCoordsAndDirections = new List<int[]>();
+
+        //list of taken moves (coordinates same, direction different)
+        for (int i = 0; i < validMovesAndDirs.Length; i++)
+        {
+            if (validMovesAndDirs[i][0] == currentPlayer.currentTurnCoords[0] && validMovesAndDirs[i][1] == currentPlayer.currentTurnCoords[1])//one of valids
+            {
+                takenCoordsAndDirections.Add(validMovesAndDirs[i]);
+            }
+        }
+        if (takenCoordsAndDirections.Count == 0)//no allowed moves
+        {
+            return 0;
+        }
+        return UpdateBeatPieces(takenCoordsAndDirections, currentPlayer);
     }
 }
 

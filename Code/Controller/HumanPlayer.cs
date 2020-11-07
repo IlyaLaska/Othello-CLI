@@ -1,24 +1,17 @@
 ﻿using System;
+using static Reversi.GameMaster;
 
 public class HumanPlayer : IPlayer
 {
-    public HumanPlayer(PlayerEnum color)
+    public HumanPlayer(PieceEnum color)
     {
         this.color = color;
         this.score = 2;
-        this.isHuman = true;
     }
-    public bool isHuman { get; set; }
     public int score { get; set; }
-    public PlayerEnum color { get; set; }
+    public PieceEnum color { get; set; }
     public int[] currentTurnCoords { get; set; }
-    public void UpdateMoves(int[][] possibleMoveCoords, bool movePassed) {
-        //Console.WriteLine("Moves for Human");
-        //foreach (int[] movee in possibleMoveCoords)
-        //{
-        //    Console.WriteLine((char)(movee[0] + 65) + "" + (movee[1] + 1));
-        //}
-        //Get from console
+    public void UpdateMoves(int[][] possibleMoveCoords, Board board = null) {
         string move = Console.ReadLine();
         if (move == "pass")
         {
@@ -26,14 +19,7 @@ public class HumanPlayer : IPlayer
         } else
         {
             int[] moveArr = ConvertMoveToArray(move);
-            //Console.WriteLine("Move: " + moveArr[0] + ":" + moveArr[1]);
             this.currentTurnCoords = moveArr;
         }   
-    }
-    int[] ConvertMoveToArray(string move)
-    {
-        int yPos = (int)Char.GetNumericValue(move, 1) - 1;
-        int xPos = (int)move[0] - 65;
-        return new int[] { xPos, yPos };
     }
 }

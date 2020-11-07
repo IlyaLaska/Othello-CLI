@@ -3,9 +3,8 @@
 public interface IPlayer
 {
     int score { get; set; }
-    bool isHuman { get; set; }
-    PlayerEnum color { get; set; }
+    PieceEnum color { get; set; }
     int[] currentTurnCoords { get; set; }
 
-    void UpdateMoves(int[][] possibleMoveCoords, bool moveSkipped);
+    void UpdateMoves(int[][] possibleMoveCoords, Board board = null);
 }

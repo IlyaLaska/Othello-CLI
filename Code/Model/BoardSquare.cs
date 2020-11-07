@@ -2,5 +2,6 @@
 
 public class BoardSquare
 {
-    public PlayerEnum belongsToPlayer = PlayerEnum.none;
+    public PieceEnum belongsToPlayer = PieceEnum.none;
+
 }

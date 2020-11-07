@@ -1,4 +1,4 @@
-public enum PlayerEnum
+public enum PieceEnum
 {
 	none,
 	black,
@@ -17,4 +17,14 @@ public enum Direction
 	S,
 	SW,
 	W
+}
+
+public static class PieceEnumExtensions
+{
+    public static PieceEnum GetOpponent(this PieceEnum colour)
+    {
+        if (colour == PieceEnum.black) return PieceEnum.white;
+        else if (colour == PieceEnum.white) return PieceEnum.black;
+        else return PieceEnum.none;
+    }
 }
