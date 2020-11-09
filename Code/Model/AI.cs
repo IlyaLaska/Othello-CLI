@@ -21,112 +21,7 @@ public static class AI
         return new int[] { move[1], move[2] };
     }
 
-    //static public int[] GetMinMaxOptimal(Board board, int[][] validMovesAndDirs, IPlayer player, int alpha, int beta, int depth = 10, bool isMaxPlayer = true)
-    //{
-    //    if (depth == 0 || validMovesAndDirs.Length == 0) return new int[] { heuristic(board, player), 0, 0 };
-    //    int[] bestMove = new int[] { 0, 0, 0 };
-
-    //    //int alpha1 = int.MinValue;
-    //    //int beta1 = int.MaxValue;
-    //    int[] move;
-    //    int[][] possibleMoves = FilterUniqueMoves(validMovesAndDirs);
-    //    if (isMaxPlayer)
-    //    {
-    //        bestMove[(int)Move.score] = int.MinValue;
-
-    //        for (int i = 0; i < possibleMoves.Length; i++)
-    //        {
-    //            player.currentTurnCoords = possibleMoves[i];
-    //            move = new int[] { 0, player.currentTurnCoords[0], player.currentTurnCoords[1] };
-
-    //            System.////////Console.WriteLine("Valid Moves (in AI - max):");
-    //            foreach (var oneMove in validMovesAndDirs)
-    //            {
-    //                System.////////Console.WriteLine("[{0}]", string.Join(", ", oneMove));
-
-    //            }
-
-    //            board.MakeMoveGetScore(player, validMovesAndDirs);
-    //            validMovesAndDirs = board.GetValidMovesList(player);
-    //            move[(int)Move.score] = GetMinMaxOptimal(board, validMovesAndDirs, player, alpha, beta, depth - 1, false)[(int)Move.score];
-    //            if (move[(int)Move.score] > alpha)
-    //            {
-    //                alpha = move[(int)Move.score];
-    //                // Save the best move so far
-    //                bestMove[(int)Move.x] = move[(int)Move.x];
-    //                bestMove[(int)Move.y] = move[(int)Move.y];
-    //                bestMove[(int)Move.score] = move[(int)Move.score];
-    //            }
-
-    //            if (beta <= alpha)
-    //            {
-    //                break;
-    //            }
-
-    //        }
-    //        return bestMove;
-
-    //    }
-    //    else
-    //    {
-    //        bestMove[(int)Move.score] = int.MaxValue;
-
-    //        for (int i = 0; i < possibleMoves.Length; i++)
-    //        {
-    //            player.currentTurnCoords = possibleMoves[i];
-    //            move = new int[] { 0, player.currentTurnCoords[0], player.currentTurnCoords[1] }; ;
-
-    //            System.////////Console.WriteLine("Valid Moves (in AI - min):");
-    //            foreach (var oneMove in validMovesAndDirs)
-    //            {
-    //                System.////////Console.WriteLine("[{0}]", string.Join(", ", oneMove));
-
-    //            }
-
-    //            board.MakeMoveGetScore(player, validMovesAndDirs);
-    //            validMovesAndDirs = board.GetValidMovesList(player);
-    //            move[(int)Move.score] = GetMinMaxOptimal(board, validMovesAndDirs, player, alpha, beta, depth - 1, true)[(int)Move.score];
-    //            if (move[(int)Move.score] < beta)
-    //            {
-    //                beta = move[(int)Move.score];
-    //                // Save the best move so far
-    //                bestMove[(int)Move.x] = move[(int)Move.x];
-    //                bestMove[(int)Move.y] = move[(int)Move.y];
-    //                bestMove[(int)Move.score] = move[(int)Move.score];
-    //            }
-
-    //            if (beta <= alpha)
-    //            {
-    //                break;
-    //            }
-
-    //        }
-    //        return bestMove;
-
-    //    }
-
-    //    //if is_player_minimizer:
-    //    //    value = -math.inf
-    //    //    for move in state.possible_moves():
-    //    //        evaluation = minimax(move, max_depth - 1, False, alpha, beta)
-    //    //        min = min(value, evaluation)
-    //    //        beta = min(beta, evaluation)
-    //    //        if beta <= alpha:
-    //    //            break
-    //    //        return value
-
-    //    //value = math.inf
-    //    //for move in state.possible_moves(){
-    //    //        evaluation = minimax(move, max_depth - 1, True, alpha, beta)
-    //    //    max = max(value, evaluation)
-    //    //    alpha = max(alpha, evaluation)
-    //    //    if beta <= alpha:
-    //    //        break
-    //    //    return value
-    //    //    }
-
-    //}
-    static public int[] GetMinMaxOptimal(Board board, int[][] validMovesAndDirs, IPlayer player, int alpha, int beta, int depth = 4, bool isMaxPlayer = true)
+    static public int[] GetMinMaxOptimal(Board board, int[][] validMovesAndDirs, IPlayer player, int alpha, int beta, int depth = 8, bool isMaxPlayer = true)
     {
         ////////Console.WriteLine("==========================");
         if (depth == 0 || validMovesAndDirs.Length == 0) return new int[] { heuristic(board, player), 0, 0 };
@@ -226,45 +121,35 @@ public static class AI
             }
             if(!exists) filtered.Add(new int[] { validMoves[i][0], validMoves[i][1] });
         }
-
-        //for (int i = 0; i < validMoves.Length; i++)
-        //{
-        //    for (int j = 0; j < filtered.Count; j++)
-        //    {
-        //        if(validMoves[i][0] == filtered[j][0] && validMoves[i][1] == filtered[j][1])//
-        //        {
-        //            //break;
-        //            goto END;
-        //        }
-            
-        //    }
-        //    filtered.Add(new int[] { validMoves[i][0], validMoves[i][1] });
-        //END:
-        //    continue;
-        //}
         return filtered.ToArray();
-        //return validMoves.Select(move => new int[] { move[0], move[1]}).Distinct().ToArray();
-        //HashSet<int[]> uniqueMoveCoords = new HashSet<int[]>();
-        //foreach (int[] move in validMoves)
-        //{
-        //    uniqueMoveCoords.Add(new int[] { move[0], move[1] });
-        //}
-        //return uniqueMoveCoords.ToArray();
     }
+
     static int heuristic(Board board, IPlayer player)
     {
         int playerScore = 0;
         int opponentScore = 0;
+
         int[,] boardSquareWeights = new int[8, 8] {
-            { -99,  8, -8,  6,  6, -8,  8,-99},
-            {   8, 48,-16,  3,  3,-16, 48,  8},
-            {  -8,-16,  4,  4,  4,  4,-16, -8},
-            {   6,  3,  4,  0,  0,  4,  3,  6},
-            {   6,  3,  4,  0,  0,  4,  3,  6},
-            {  -8,-16,  4,  4,  4,  4,-16, -8},
-            {   8, 48,-16,  3,  3,-16, 48,  8},
-            { -99,  8, -8,  6,  6, -8,  8,-99}
+            { -99,  48, -8,  6,  6, -8, 48,-99},
+            {  48,  -8,-16,  3,  3,-16, -8, 48},
+            {  -8, -16,  4,  4,  4,  4,-16, -8},
+            {   6,   3,  4,  0,  0,  4,  3,  6},
+            {   6,   3,  4,  0,  0,  4,  3,  6},
+            {  -8, -16,  4,  4,  4,  4,-16, -8},
+            {  48,  -8,-16,  3,  3,-16, -8, 48},
+            { -99,  48, -8,  6,  6, -8, 48,-99}
         };
+
+        //int[,] boardSquareWeights = new int[8, 8] {
+        //    { -99,  8, -8,  6,  6, -8,  8,-99},
+        //    {   8, 48,-16,  3,  3,-16, 48,  8},
+        //    {  -8,-16,  4,  4,  4,  4,-16, -8},
+        //    {   6,  3,  4,  0,  0,  4,  3,  6},
+        //    {   6,  3,  4,  0,  0,  4,  3,  6},
+        //    {  -8,-16,  4,  4,  4,  4,-16, -8},
+        //    {   8, 48,-16,  3,  3,-16, 48,  8},
+        //    { -99,  8, -8,  6,  6, -8,  8,-99}
+        //};
 
         for (int y = 0; y < 8; y++)
         {

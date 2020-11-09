@@ -76,75 +76,138 @@ public class Board
     {
         PieceEnum currentPlayer = currPlayer.color;
 
-        List<int[]> validMovesList = new List<int[]>();
+        //List<int[]> validMovesList = new List<int[]>();
+        int[][][] movesArray = new int[64][][];
+        int pos = 0;
         for (int i = 0; i < boardLength; i++)
         {
             for (int j = 0; j < boardLength; j++)
             {
                 if (board[i, j].belongsToPlayer == currentPlayer)//have to check possible moves for that piece
                 {
-                    validMovesList = validMovesList.Concat(GetValidMovesForAPiece(new int[] { j, i }, currentPlayer)).ToList();
+                    movesArray[pos++] = GetValidMovesForAPiece(new int[] { j, i }, currentPlayer).ToArray();
+                    //validMovesList = validMovesList.Concat(GetValidMovesForAPiece(new int[] { j, i }, currentPlayer)).ToList();
                 }
+            }
+        }
+        List<int[]> validMovesList = new List<int[]>();
+        for (int i = 0; i < pos; i++)
+        {
+            for (int j = 0; j < movesArray[i].Length; j++)
+            {
+                validMovesList.Add(movesArray[i][j]);
             }
         }
         return validMovesList.ToArray();
     }
 
 
-    private HashSet<int[]> GetValidMovesForAPiece(int[] boardSquareCoordinates, PieceEnum currentPlayer)
+    private List<int[]> GetValidMovesForAPiece(int[] boardSquareCoordinates, PieceEnum currentPlayer)
     {
-        int[][] dirs = new int[8][];
+        //int[][] dirs = new int[8][];
 
-        dirs[(int)Direction.NW] = new int[] { -1, -1 };
-        dirs[(int)Direction.N ] = new int[] { -1, 0 };
-        dirs[(int)Direction.NE] = new int[] { 1, -1 };
-        dirs[(int)Direction.E ] = new int[] { 0, 1 };
-        dirs[(int)Direction.SE] = new int[] { 1, 1 };
-        dirs[(int)Direction.S ] = new int[] { 1, 0 };
-        dirs[(int)Direction.SW] = new int[] { -1, 1 };
-        dirs[(int)Direction.W ] = new int[] { 0, -1 };
+        //dirs[(int)Direction.NW] = new int[] { -1, -1 };
+        //dirs[(int)Direction.N ] = new int[] { -1, 0 };
+        //dirs[(int)Direction.NE] = new int[] { 1, -1 };
+        //dirs[(int)Direction.E ] = new int[] { 0, 1 };
+        //dirs[(int)Direction.SE] = new int[] { 1, 1 };
+        //dirs[(int)Direction.S ] = new int[] { 1, 0 };
+        //dirs[(int)Direction.SW] = new int[] { -1, 1 };
+        //dirs[(int)Direction.W ] = new int[] { 0, -1 };
 
-        HashSet<int[]> validMovesList = new HashSet<int[]>();
+        List<int[]> validMovesList = new List<int[]>();
 
         int[] array;
-        for (int i = 0; i < dirs.Length; i++)
+        //for (int i = 0; i < dirs.Length; i++)
+        //{
+        //    array = GetSuccesfulMoveInDirection(boardSquareCoordinates, dirs[i], currentPlayer);
+        //    if(array[0] == 1) validMovesList.Add(new int[] { array[1], array[2], array[3], array[4] });
+        //}
+
+        for (int dirX = -1; dirX < 2; dirX++)
         {
-            array = GetSuccesfulMoveInDirection(boardSquareCoordinates, dirs[i], currentPlayer);
-            if(array[0] == 1) validMovesList.Add(new int[] { array[1], array[2], array[3], array[4] });
+            for(int dirY = -1; dirY < 2; dirY++)
+            {
+                if(dirX != 0 && dirY != 0)
+                {
+                    array = GetSuccesfulMoveInDirection(boardSquareCoordinates, dirX, dirY, currentPlayer);
+                    if (array[0] == 1) validMovesList.Add(new int[] { array[1], array[2], array[3], array[4] });
+                }
+
+            }
+
         }
 
         return validMovesList;
     }
-
-    private int[] GetSuccesfulMoveInDirection(int[] boardSquareCoordinates, int[] direction, PieceEnum currentPlayer)
+    private int[] GetSuccesfulMoveInDirection(int[] boardSquareCoordinates, int dirX, int dirY, PieceEnum currentPlayer)
     {
+        PieceEnum opponent = currentPlayer.GetOpponent();
         int hasBeatableEnemies = 0;
-        int x = direction[0];
-        int y = direction[1];
-        int[] tempCoords = (int[])boardSquareCoordinates.Clone();
-        
+        //int[] tempCoords = (int[])boardSquareCoordinates.Clone();
+        int tempY = boardSquareCoordinates[0];
+        int tempX = boardSquareCoordinates[1];
+
         //move to next checked square
-        tempCoords[1] += x;
-        tempCoords[0] += y;
-        while (IsInRange(tempCoords[0]) && IsInRange(tempCoords[1]))//while inside board borders
+        //tempCoords[1] += x;
+        //tempCoords[0] += y;
+        tempX += dirX;
+        tempY += dirY;
+
+        while (IsInRange(tempY) && IsInRange(tempX))//while inside board borders
         {
-            if (board[tempCoords[1], tempCoords[0]].belongsToPlayer == currentPlayer.GetOpponent())//found opponent
+            if (board[tempX, tempY].belongsToPlayer == opponent)//found opponent
             {
                 hasBeatableEnemies = 1;
             }
-            else if (hasBeatableEnemies == 1 && board[tempCoords[1], tempCoords[0]].belongsToPlayer == PieceEnum.none)//there are beatable opponents
+            else if (hasBeatableEnemies == 1 && board[tempX, tempY].belongsToPlayer == PieceEnum.none)//there are beatable opponents
             {
-                return new int[] { 1, tempCoords[0], tempCoords[1], x, y };
+                return new int[] { 1, tempY, tempX, dirX, dirY };
             }
-            else if (board[tempCoords[1], tempCoords[0]].belongsToPlayer != currentPlayer.GetOpponent())//found no enemies, reached dead end
+            else if (board[tempX, tempY].belongsToPlayer != opponent)//found no enemies, reached dead end
             {
                 break;
             }
-            tempCoords[1] += x;
-            tempCoords[0] += y;
+            tempX += dirX;
+            tempY += dirY;
         }
-        return new int[] { 0, tempCoords[0], tempCoords[1], x, y };//no beatable enemies found
+        return new int[] { 0, tempY, tempX, dirX, dirY };//no beatable enemies found
     }
+    //private int[] GetSuccesfulMoveInDirection(int[] boardSquareCoordinates, int[] direction, PieceEnum currentPlayer)
+    //{
+    //    PieceEnum opponent = currentPlayer.GetOpponent();
+    //    int hasBeatableEnemies = 0;
+    //    int x = direction[0];
+    //    int y = direction[1];
+    //    //int[] tempCoords = (int[])boardSquareCoordinates.Clone();
+    //    int tempY = boardSquareCoordinates[0];
+    //    int tempX = boardSquareCoordinates[1];
+
+    //    //move to next checked square
+    //    //tempCoords[1] += x;
+    //    //tempCoords[0] += y;
+    //    tempX += x;
+    //    tempY += y;
+
+    //    while (IsInRange(tempY) && IsInRange(tempX))//while inside board borders
+    //    {
+    //        if (board[tempX, tempY].belongsToPlayer == opponent)//found opponent
+    //        {
+    //            hasBeatableEnemies = 1;
+    //        }
+    //        else if (hasBeatableEnemies == 1 && board[tempX, tempY].belongsToPlayer == PieceEnum.none)//there are beatable opponents
+    //        {
+    //            return new int[] { 1, tempY, tempX, x, y };
+    //        }
+    //        else if (board[tempX, tempY].belongsToPlayer != opponent)//found no enemies, reached dead end
+    //        {
+    //            break;
+    //        }
+    //        tempX += x;
+    //        tempY += y;
+    //    }
+    //    return new int[] { 0, tempY, tempX, x, y };//no beatable enemies found
+    //}
 
     public bool IsInRange(int value)
     {
@@ -163,7 +226,7 @@ public class Board
         int changedPieces = 0;
         foreach (var XYDirection in takenCoordsAndDirs)
         {
-            ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, ref changedPieces);
+            changedPieces = ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn);
             //if (currentTurn == PieceEnum.black)
             //{
             //    ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.white, ref changedPieces);
@@ -175,18 +238,20 @@ public class Board
         return changedPieces;
     }
 
-    public void ChangePieces(int coordX, int coordY, int x, int y, PieceEnum colorCurrent, ref int changed)
+    public int ChangePieces(int coordX, int coordY, int x, int y, PieceEnum colorCurrent)
     {
+        int changed = 0;
         int[] XYDirs = new int[] { coordX, coordY, x, y };
         //Console.WriteLine("{1} [{0}]", string.Join(", ", XYDirs), "XYDirs");
         board[coordY, coordX].belongsToPlayer = colorCurrent;
-        while (board[coordY - x, coordX - y].belongsToPlayer == colorCurrent.GetOpponent())//Out of bounds
+        while (board[coordY - x, coordX - y].belongsToPlayer == colorCurrent.GetOpponent())
         {
             coordX -= y;
             coordY -= x;
             board[coordY, coordX].belongsToPlayer = colorCurrent;
             changed++;
         }
+        return changed;
     }
 
     public int MakeMoveGetScore(IPlayer currentPlayer, int[][] validMovesAndDirs)
