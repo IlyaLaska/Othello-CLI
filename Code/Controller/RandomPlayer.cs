@@ -12,7 +12,7 @@ public class RandomPlayer : IPlayer
     public PieceEnum color { get; set; }
     public int[] currentTurnCoords { get; set; }
 
-    public void UpdateMoves(int[][] validMoves, Board board = null)
+    public void UpdateMoves(int[][] validMoves, Board board)
     {
         if (validMoves.Length == 0)
         {

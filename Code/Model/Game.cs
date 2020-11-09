@@ -36,7 +36,7 @@ public class Game
         gameBoard.InitBoard();
         SetBlackHole(blackHoleCoords);
         UpdateValidMovesList();
-        currentPlayer.UpdateMoves(this.validMovesAndDirsForThisTurn);
+        currentPlayer.UpdateMoves(this.validMovesAndDirsForThisTurn, gameBoard);
     }
 
     public void PlayRound()
@@ -44,6 +44,7 @@ public class Game
         //get coordinates of next move
         //List<int[]> takenCoordsAndDirections = GetMoveFromPlayer();
         int beatPiecesCount = gameBoard.MakeMoveGetScore(currentPlayer, validMovesAndDirsForThisTurn);
+        //gameBoard.PrintBoard();
         //Console.WriteLine("Taken: " + takenCoordsAndDirections.Count);
         if (beatPiecesCount == 0) //skipped move
         {

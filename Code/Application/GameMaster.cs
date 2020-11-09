@@ -11,7 +11,7 @@ namespace Reversi
             int[] blackHoleCoords = GetBlackHoleCoords();
             PieceEnum testerColour = GetTesterColour();
             IPlayer tester = new HumanPlayer(testerColour);
-            IPlayer bot = new RandomPlayer(GetOpponentColour(testerColour));
+            IPlayer bot = new AIPlayer(GetOpponentColour(testerColour));
             
             if (testerColour == PieceEnum.black)
             {
@@ -51,6 +51,7 @@ namespace Reversi
 
         static PieceEnum GetTesterColour()
         {
+            //Console.WriteLine("Please input your opponent's colour: ");
             string notTesterColour = Console.ReadLine();
             if (notTesterColour == "white")
             {

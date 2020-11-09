@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 public class Board
@@ -14,7 +16,42 @@ public class Board
     {
         this.board = new BoardSquare[boardLength, boardLength];
     }
+    public Board(BoardSquare[,] board2)
+    {
+        //this.board = board;
+        this.board = new BoardSquare[8, 8];
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                this.board[i, j] = new BoardSquare();
+                this.board[i, j].belongsToPlayer = board2[i,j].belongsToPlayer;
+            }
+        }
+    }
+    public Board Clone()
+    {
+        return new Board(this.board);
+    }
 
+    public void PrintBoard()
+    {
+        Console.WriteLine("===============GameBoard:===============");
+        Console.WriteLine("  |A|B|C|D|E|F|G|H|");
+        for (int y = 0; y < 8; y++)
+        {
+            Console.Write(y+1 + " |");
+            for (int x = 0; x < 8; x++)
+            {
+                if (this.board[y, x].belongsToPlayer == PieceEnum.black) Console.Write("B|");
+                else if (this.board[y, x].belongsToPlayer == PieceEnum.white) Console.Write("W|");
+                else if (this.board[y, x].belongsToPlayer == PieceEnum.none) Console.Write("O|");
+                else if (this.board[y, x].belongsToPlayer == PieceEnum.blackHole) Console.Write("H|");
+            }
+            Console.WriteLine();
+        }
+        Console.WriteLine("=================================================");
+    }
     public void InitBoard()
     {
         for (int i = 0; i < boardLength; i++)
@@ -39,14 +76,14 @@ public class Board
     {
         PieceEnum currentPlayer = currPlayer.color;
 
-        HashSet<int[]> validMovesList = new HashSet<int[]>();
+        List<int[]> validMovesList = new List<int[]>();
         for (int i = 0; i < boardLength; i++)
         {
             for (int j = 0; j < boardLength; j++)
             {
                 if (board[i, j].belongsToPlayer == currentPlayer)//have to check possible moves for that piece
                 {
-                    validMovesList = new HashSet<int[]>(validMovesList.Concat(GetValidMovesForAPiece(new int[] { j, i }, currentPlayer)));
+                    validMovesList = validMovesList.Concat(GetValidMovesForAPiece(new int[] { j, i }, currentPlayer)).ToList();
                 }
             }
         }
@@ -114,28 +151,36 @@ public class Board
         return value < boardLength && value >= 0;
     }
 
-    public int UpdateBeatPieces(List<int[]> validMoves, IPlayer currentPlayer)
+    public int UpdateBeatPieces(List<int[]> takenCoordsAndDirs, IPlayer currentPlayer)
     {
+        //Console.WriteLine("TakenCoordsDirs: ");
+        //foreach (var oneMove in takenCoordsAndDirs)
+        //{
+        //    Console.WriteLine("[{0}]", string.Join(", ", oneMove));
+
+        //}
         PieceEnum currentTurn = currentPlayer.color;
         int changedPieces = 0;
-
-        foreach (var XYDirection in validMoves)
+        foreach (var XYDirection in takenCoordsAndDirs)
         {
-            if (currentTurn == PieceEnum.black)
-            {
-                ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.white, ref changedPieces);
-            }
-            else ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.black, ref changedPieces);
+            ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, ref changedPieces);
+            //if (currentTurn == PieceEnum.black)
+            //{
+            //    ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.white, ref changedPieces);
+            //}
+            //else ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.black, ref changedPieces);
         }
 
         boardUpdateEvent?.Invoke();
         return changedPieces;
     }
 
-    public void ChangePieces(int coordX, int coordY, int x, int y, PieceEnum colorCurrent, PieceEnum colorEnemy, ref int changed)
+    public void ChangePieces(int coordX, int coordY, int x, int y, PieceEnum colorCurrent, ref int changed)
     {
+        int[] XYDirs = new int[] { coordX, coordY, x, y };
+        //Console.WriteLine("{1} [{0}]", string.Join(", ", XYDirs), "XYDirs");
         board[coordY, coordX].belongsToPlayer = colorCurrent;
-        while (board[coordY - x, coordX - y].belongsToPlayer == colorEnemy)
+        while (board[coordY - x, coordX - y].belongsToPlayer == colorCurrent.GetOpponent())//Out of bounds
         {
             coordX -= y;
             coordY -= x;
@@ -146,6 +191,13 @@ public class Board
 
     public int MakeMoveGetScore(IPlayer currentPlayer, int[][] validMovesAndDirs)
     {
+        //Console.WriteLine("IN MAKEMOVEGetSCORE. ValidMoves len = " + validMovesAndDirs.Length);
+        //Console.WriteLine("ValidMovesDirs: ");
+        //foreach (var oneMove in validMovesAndDirs)
+        //{
+        //    Console.WriteLine("[{0}]", string.Join(", ", oneMove));
+
+        //}
         List<int[]> takenCoordsAndDirections = new List<int[]>();
 
         //list of taken moves (coordinates same, direction different)
@@ -156,6 +208,12 @@ public class Board
                 takenCoordsAndDirections.Add(validMovesAndDirs[i]);
             }
         }
+        //System.Console.WriteLine("TakenCoordsAndDirs (in MakeMoveGetScore):");
+        //foreach (var oneMove in takenCoordsAndDirections)
+        //{
+        //    System.Console.WriteLine("[{0}]", string.Join(", ", oneMove));
+
+        //}
         if (takenCoordsAndDirections.Count == 0)//no allowed moves
         {
             return 0;

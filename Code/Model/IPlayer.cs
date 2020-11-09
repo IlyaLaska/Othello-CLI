@@ -6,5 +6,5 @@ public interface IPlayer
     PieceEnum color { get; set; }
     int[] currentTurnCoords { get; set; }
 
-    void UpdateMoves(int[][] possibleMoveCoords, Board board = null);
+    void UpdateMoves(int[][] possibleMoveCoords, Board board);
 }

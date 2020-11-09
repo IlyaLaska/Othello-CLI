@@ -11,7 +11,16 @@ public class HumanPlayer : IPlayer
     public int score { get; set; }
     public PieceEnum color { get; set; }
     public int[] currentTurnCoords { get; set; }
-    public void UpdateMoves(int[][] possibleMoveCoords, Board board = null) {
+    public void UpdateMoves(int[][] possibleMoveCoords, Board board) {
+        //board.PrintBoard();
+        //Console.WriteLine("Human, Your availible moves: ");
+        //foreach (var oneMove in possibleMoveCoords)
+        //{
+        //    Console.WriteLine(((char)(oneMove[0] + 65)) + ""+ (oneMove[1] + 1));
+        //    //Console.WriteLine("[{0}]", string.Join(", ", oneMove));
+
+        //}
+        //Console.WriteLine("Please Make your move:");
         string move = Console.ReadLine();
         if (move == "pass")
         {
