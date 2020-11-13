@@ -1,0 +1,6 @@
+D:\Programming\Code\C#\Othello\bin\Release\ConsoleApplication.exe
+D:\Programming\Code\C#\Othello\bin\Release\ConsoleApplication.pdb
+D:\Programming\Code\C#\Othello\obj\x86\Release\Othello CLI.csprojAssemblyReference.cache
+D:\Programming\Code\C#\Othello\obj\x86\Release\Othello CLI.csproj.CoreCompileInputs.cache
+D:\Programming\Code\C#\Othello\obj\x86\Release\ConsoleApplication.exe
+D:\Programming\Code\C#\Othello\obj\x86\Release\ConsoleApplication.pdb

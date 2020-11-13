@@ -6,32 +6,38 @@ using System.Linq;
 public class Board
 {
     public int boardLength = 8;
-    public BoardSquare[,] board;
-
+    //public BoardSquare[,] board;
+    public PieceEnum[,] board;
+    public int turn = 1;
+    public int[] lastMove = new int[2];
+    public int[] blackHoleCoords;
 
     public delegate void BoardUpdateEvent();
     public static event BoardUpdateEvent boardUpdateEvent;
 
     public Board()
     {
-        this.board = new BoardSquare[boardLength, boardLength];
+        this.board = new PieceEnum[boardLength, boardLength]; //new BoardSquare[boardLength, boardLength];
     }
-    public Board(BoardSquare[,] board2)
+
+    public Board(Board board2)
     {
         //this.board = board;
-        this.board = new BoardSquare[8, 8];
+        this.board = new PieceEnum[boardLength, boardLength];//new BoardSquare[8, 8];
         for (int i = 0; i < 8; i++)
         {
             for (int j = 0; j < 8; j++)
             {
-                this.board[i, j] = new BoardSquare();
-                this.board[i, j].belongsToPlayer = board2[i,j].belongsToPlayer;
+                //this.board[i, j] = new // BoardSquare();
+                this.board[i, j] = board2.board[i,j];
             }
         }
+        this.turn = board2.turn;
+        this.lastMove = (int[]) board2.lastMove.Clone();
     }
     public Board Clone()
     {
-        return new Board(this.board);
+        return new Board(this);
     }
 
     public void PrintBoard()
@@ -43,38 +49,38 @@ public class Board
             Console.Write(y+1 + " |");
             for (int x = 0; x < 8; x++)
             {
-                if (this.board[y, x].belongsToPlayer == PieceEnum.black) Console.Write("B|");
-                else if (this.board[y, x].belongsToPlayer == PieceEnum.white) Console.Write("W|");
-                else if (this.board[y, x].belongsToPlayer == PieceEnum.none) Console.Write("O|");
-                else if (this.board[y, x].belongsToPlayer == PieceEnum.blackHole) Console.Write("H|");
+                if (this.board[y, x] == PieceEnum.black) Console.Write("B|");
+                else if (this.board[y, x] == PieceEnum.white) Console.Write("W|");
+                else if (this.board[y, x] == PieceEnum.none) Console.Write("O|");
+                else if (this.board[y, x] == PieceEnum.blackHole) Console.Write("H|");
             }
             Console.WriteLine();
         }
         Console.WriteLine("=================================================");
     }
+
     public void InitBoard()
     {
         for (int i = 0; i < boardLength; i++)
         {
             for (int j = 0; j < boardLength; j++)
             {
-                this.board[i, j] = new BoardSquare();
+                this.board[i, j] = PieceEnum.none;
             }
         }
 
         //Add starting Pieces
-        this.board[3, 3].belongsToPlayer = PieceEnum.white;
-        this.board[4, 4].belongsToPlayer = PieceEnum.white;
+        this.board[3, 3] = PieceEnum.white;
+        this.board[4, 4] = PieceEnum.white;
 
-        this.board[3, 4].belongsToPlayer = PieceEnum.black;
-        this.board[4, 3].belongsToPlayer = PieceEnum.black;
+        this.board[3, 4] = PieceEnum.black;
+        this.board[4, 3] = PieceEnum.black;
 
         boardUpdateEvent?.Invoke();
     }
 
-    public int[][] GetValidMovesList(IPlayer currPlayer)
+    public int[][] GetValidMovesList(PieceEnum currentPlayer)
     {
-        PieceEnum currentPlayer = currPlayer.color;
 
         //List<int[]> validMovesList = new List<int[]>();
         int[][][] movesArray = new int[64][][];
@@ -83,7 +89,7 @@ public class Board
         {
             for (int j = 0; j < boardLength; j++)
             {
-                if (board[i, j].belongsToPlayer == currentPlayer)//have to check possible moves for that piece
+                if (board[i, j] == currentPlayer)//have to check possible moves for that piece
                 {
                     movesArray[pos++] = GetValidMovesForAPiece(new int[] { j, i }, currentPlayer).ToArray();
                     //validMovesList = validMovesList.Concat(GetValidMovesForAPiece(new int[] { j, i }, currentPlayer)).ToList();
@@ -98,6 +104,14 @@ public class Board
                 validMovesList.Add(movesArray[i][j]);
             }
         }
+        //Console.WriteLine("validMoves:");
+        //foreach (var oneMove in validMovesList)
+        //{
+        //    if(oneMove[0] == 0 && oneMove[1] == 0) Console.WriteLine("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+        //    Console.WriteLine("[{0}]" + " == [" + (char)(oneMove[0]+65)+ "" + (oneMove[1]+1) + "]", string.Join(", ", oneMove));
+
+        //}
+        //Console.WriteLine("--------------------------");
         return validMovesList.ToArray();
     }
 
@@ -114,7 +128,7 @@ public class Board
         //dirs[(int)Direction.S ] = new int[] { 1, 0 };
         //dirs[(int)Direction.SW] = new int[] { -1, 1 };
         //dirs[(int)Direction.W ] = new int[] { 0, -1 };
-
+  
         List<int[]> validMovesList = new List<int[]>();
 
         int[] array;
@@ -128,16 +142,14 @@ public class Board
         {
             for(int dirY = -1; dirY < 2; dirY++)
             {
-                if(dirX != 0 && dirY != 0)
-                {
-                    array = GetSuccesfulMoveInDirection(boardSquareCoordinates, dirX, dirY, currentPlayer);
-                    if (array[0] == 1) validMovesList.Add(new int[] { array[1], array[2], array[3], array[4] });
-                }
+                if (dirX == 0 && dirY == 0) continue;
+                array = GetSuccesfulMoveInDirection(boardSquareCoordinates, dirX, dirY, currentPlayer);
+                //Console.WriteLine("Sucessful Move in Dir: [{0}]", string.Join(", ", array));
+                if (array[0] == 1) validMovesList.Add(new int[] { array[1], array[2], array[3], array[4] });
 
             }
 
         }
-
         return validMovesList;
     }
     private int[] GetSuccesfulMoveInDirection(int[] boardSquareCoordinates, int dirX, int dirY, PieceEnum currentPlayer)
@@ -153,18 +165,22 @@ public class Board
         //tempCoords[0] += y;
         tempX += dirX;
         tempY += dirY;
-
+        //this.PrintBoard();
         while (IsInRange(tempY) && IsInRange(tempX))//while inside board borders
         {
-            if (board[tempX, tempY].belongsToPlayer == opponent)//found opponent
+
+            //Console.WriteLine("Board at " + tempX + ":" + tempY + " " + this.board[tempX, tempY]);
+            //Console.WriteLine("Opponent " + opponent);
+            if (this.board[tempX, tempY] == opponent)//found opponent
             {
+                //Console.WriteLine("Found Opponent" + tempX + ":" + tempY  + " "+ this.board[tempX, tempY]);
                 hasBeatableEnemies = 1;
             }
-            else if (hasBeatableEnemies == 1 && board[tempX, tempY].belongsToPlayer == PieceEnum.none)//there are beatable opponents
+            else if (hasBeatableEnemies == 1 && this.board[tempX, tempY] == PieceEnum.none)//there are beatable opponents
             {
                 return new int[] { 1, tempY, tempX, dirX, dirY };
             }
-            else if (board[tempX, tempY].belongsToPlayer != opponent)//found no enemies, reached dead end
+            else if (this.board[tempX, tempY] != opponent)//found no enemies, reached dead end
             {
                 break;
             }
@@ -173,41 +189,7 @@ public class Board
         }
         return new int[] { 0, tempY, tempX, dirX, dirY };//no beatable enemies found
     }
-    //private int[] GetSuccesfulMoveInDirection(int[] boardSquareCoordinates, int[] direction, PieceEnum currentPlayer)
-    //{
-    //    PieceEnum opponent = currentPlayer.GetOpponent();
-    //    int hasBeatableEnemies = 0;
-    //    int x = direction[0];
-    //    int y = direction[1];
-    //    //int[] tempCoords = (int[])boardSquareCoordinates.Clone();
-    //    int tempY = boardSquareCoordinates[0];
-    //    int tempX = boardSquareCoordinates[1];
 
-    //    //move to next checked square
-    //    //tempCoords[1] += x;
-    //    //tempCoords[0] += y;
-    //    tempX += x;
-    //    tempY += y;
-
-    //    while (IsInRange(tempY) && IsInRange(tempX))//while inside board borders
-    //    {
-    //        if (board[tempX, tempY].belongsToPlayer == opponent)//found opponent
-    //        {
-    //            hasBeatableEnemies = 1;
-    //        }
-    //        else if (hasBeatableEnemies == 1 && board[tempX, tempY].belongsToPlayer == PieceEnum.none)//there are beatable opponents
-    //        {
-    //            return new int[] { 1, tempY, tempX, x, y };
-    //        }
-    //        else if (board[tempX, tempY].belongsToPlayer != opponent)//found no enemies, reached dead end
-    //        {
-    //            break;
-    //        }
-    //        tempX += x;
-    //        tempY += y;
-    //    }
-    //    return new int[] { 0, tempY, tempX, x, y };//no beatable enemies found
-    //}
 
     public bool IsInRange(int value)
     {
@@ -227,11 +209,6 @@ public class Board
         foreach (var XYDirection in takenCoordsAndDirs)
         {
             changedPieces = ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn);
-            //if (currentTurn == PieceEnum.black)
-            //{
-            //    ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.white, ref changedPieces);
-            //}
-            //else ChangePieces(XYDirection[0], XYDirection[1], XYDirection[2], XYDirection[3], currentTurn, PieceEnum.black, ref changedPieces);
         }
 
         boardUpdateEvent?.Invoke();
@@ -243,12 +220,12 @@ public class Board
         int changed = 0;
         int[] XYDirs = new int[] { coordX, coordY, x, y };
         //Console.WriteLine("{1} [{0}]", string.Join(", ", XYDirs), "XYDirs");
-        board[coordY, coordX].belongsToPlayer = colorCurrent;
-        while (board[coordY - x, coordX - y].belongsToPlayer == colorCurrent.GetOpponent())
+        board[coordY, coordX] = colorCurrent;
+        while (board[coordY - x, coordX - y] == colorCurrent.GetOpponent())
         {
             coordX -= y;
             coordY -= x;
-            board[coordY, coordX].belongsToPlayer = colorCurrent;
+            board[coordY, coordX] = colorCurrent;
             changed++;
         }
         return changed;
@@ -263,12 +240,16 @@ public class Board
         //    Console.WriteLine("[{0}]", string.Join(", ", oneMove));
 
         //}
+        if (currentPlayer.currentTurnCoords == null) return 0;
+        this.lastMove = currentPlayer.currentTurnCoords;
         List<int[]> takenCoordsAndDirections = new List<int[]>();
+        int curX = currentPlayer.currentTurnCoords[0];
+        int curY = currentPlayer.currentTurnCoords[1];
 
         //list of taken moves (coordinates same, direction different)
         for (int i = 0; i < validMovesAndDirs.Length; i++)
         {
-            if (validMovesAndDirs[i][0] == currentPlayer.currentTurnCoords[0] && validMovesAndDirs[i][1] == currentPlayer.currentTurnCoords[1])//one of valids
+            if (validMovesAndDirs[i][0] == curX && validMovesAndDirs[i][1] == curY)//one of valids
             {
                 takenCoordsAndDirections.Add(validMovesAndDirs[i]);
             }
@@ -285,5 +266,94 @@ public class Board
         }
         return UpdateBeatPieces(takenCoordsAndDirections, currentPlayer);
     }
+
+    //public static Boolean CheckValidMove(SpotEnum[,] Board, SpotEnum Player, int i, int j)
+    //{
+    //    // check if this empty spt is a valid move
+    //    //    -1
+    //    // -1  x  +1
+    //    //    +1
+    //    for (int direction_i = -1; direction_i < 2; direction_i++)      // UP / none / DOWN     (-1,0,1)
+    //    {
+    //        for (int direction_j = -1; direction_j < 2; direction_j++)  // LEFT/ none / RIGHT   (-1,0,1)
+    //        {
+    //            if (!(direction_i == 0 && direction_j == 0))         // NOT the same spot! (i,j)
+    //            {
+    //                // get potential killed enemy soldiers list
+    //                List<Point> tmp_lst_pts =
+    //                    GetKillCountInMove(Board, Player, i, j, direction_i, direction_j);
+
+    //                if (tmp_lst_pts.Count() > 0)    //Check if there is enemy soldiers to kill (valid move!)
+    //                {
+    //                    return true;
+    //                }
+    //            }
+    //        }
+    //    }
+    //    return false;
+    //}
+
+
+    //public static List<Point> GetAvailibleMovesSpots(SpotEnum[,] Board, SpotEnum Player)
+    //{
+    //    List<Point> move_pts = new List<Point>();
+
+    //    for (int j = 1; j <= 8; j++)
+    //    {
+    //        for (int i = 1; i <= 8; i++)
+    //        {
+    //            // check if spot is empty for the next move
+    //            if (Board[i, j] == SpotEnum.Empty)
+    //            {
+    //                if (CheckValidMove(Board, Player, i, j))
+    //                {
+    //                    move_pts.Add(new Point(i, j));
+    //                }
+    //            }
+    //        }
+
+    //    }
+
+    //    return move_pts;
+    //}
+
+    //public static List<Point> GetKillList(SpotEnum[,] Board, SpotEnum Player, int i, int j)
+    //{
+    //    Dictionary<Point, Boolean> KillDic = new Dictionary<Point, Boolean>(); // count all spots that we can kill enemy in this i,j move
+
+    //    for (int direction_i = -1; direction_i < 2; direction_i++)      // UP / none / DOWN     (-1,0,1)
+    //    {
+    //        for (int direction_j = -1; direction_j < 2; direction_j++)  // LEFT/ none / RIGHT   (-1,0,1)
+    //        {
+    //            if (!(direction_i == 0 && direction_j == 0))         // NOT the same spot! (i,j)
+    //            {
+    //                // get potential killed enemy soldiers list
+    //                List<Point> tmp_lst_pts =
+    //                    GetKillCountInMove(Board, Player, i, j, direction_i, direction_j);
+
+    //                // insert those points in the Points Dictionary
+    //                foreach (var item in tmp_lst_pts)
+    //                {
+    //                    if (!KillDic.ContainsKey(item))
+    //                    {
+    //                        KillDic.Add(item, true);
+    //                    }
+    //                }
+
+    //            }
+    //        }
+    //    }
+    //    return KillDic.Keys.ToList();   //retun the points list (from the dictionary)
+    //}
+
+    //public static void MakeMove(SpotEnum[,] Board, SpotEnum Player, int i, int j)
+    //{
+    //    List<Point> KillList = GameModel.GetKillList(Board, Player, i, j);
+    //    Board[i, j] = Player;
+    //    foreach (var item in KillList)
+    //    {
+    //        Board[item.X, item.Y] = Player;
+    //    }
+    //}
 }
 

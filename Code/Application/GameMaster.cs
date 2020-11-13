@@ -31,6 +31,13 @@ namespace Reversi
 
         public static void gameEndHandler()
         {
+            int bs=0, ws=0;
+            if (game.currentPlayer.color == PieceEnum.black) bs = game.currentPlayer.score;
+            else ws = game.currentPlayer.score;
+            if (bs != 0) ws = 63 - bs;
+            else bs = 63 - ws;
+            Console.WriteLine("B: " + bs + " W: " + ws);
+            Console.ReadLine();
             Environment.Exit(1);
         }
 

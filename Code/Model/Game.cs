@@ -45,7 +45,7 @@ public class Game
         //List<int[]> takenCoordsAndDirections = GetMoveFromPlayer();
         int beatPiecesCount = gameBoard.MakeMoveGetScore(currentPlayer, validMovesAndDirsForThisTurn);
         //gameBoard.PrintBoard();
-        //Console.WriteLine("Taken: " + takenCoordsAndDirections.Count);
+        //Console.WriteLine("COUNT: " + beatPiecesCount);
         if (beatPiecesCount == 0) //skipped move
         {
             ChangePlayer();
@@ -66,7 +66,7 @@ public class Game
     public void UpdateValidMovesList()//uncomment
     {
         //get valid moves list
-        this.validMovesAndDirsForThisTurn = gameBoard.GetValidMovesList(currentPlayer);
+        this.validMovesAndDirsForThisTurn = gameBoard.GetValidMovesList(currentPlayer.color);
 
         getValidMovesListEvent?.Invoke();
 
@@ -96,7 +96,7 @@ public class Game
 
     private bool IsMaxScore()
     {
-        return black.score + white.score == 64;
+        return black.score + white.score == 63;
     }
 
     private void ChangePlayer()
@@ -125,6 +125,7 @@ public class Game
 
     public void SetBlackHole(int[] blackHoleCoords)
     {
-        this.gameBoard.board[blackHoleCoords[1], blackHoleCoords[0]].belongsToPlayer = PieceEnum.blackHole;
+        this.gameBoard.board[blackHoleCoords[1], blackHoleCoords[0]] = PieceEnum.blackHole;
+        this.gameBoard.blackHoleCoords = new int[] { blackHoleCoords[0], blackHoleCoords[1] };
     }
 }
