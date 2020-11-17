@@ -8,6 +8,12 @@ public class HumanPlayer : IPlayer
         this.color = color;
         this.score = 2;
     }
+    public HumanPlayer(IPlayer player)
+    {
+        this.color = player.color;
+        this.score = player.score;
+        this.currentTurnCoords = player.currentTurnCoords;
+    }
     public int score { get; set; }
     public PieceEnum color { get; set; }
     public int[] currentTurnCoords { get; set; }
@@ -31,4 +37,12 @@ public class HumanPlayer : IPlayer
             this.currentTurnCoords = moveArr;
         }   
     }
+    public object Clone()
+    {
+        return this.MemberwiseClone();
+    }
+    //public HumanPlayer Clone()
+    //{
+    //    return new HumanPlayer(this);
+    //}
 }

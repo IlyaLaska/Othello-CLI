@@ -28,11 +28,13 @@ public static class AI
         //Console.WriteLine("Called Optimal Depth: " + depth);
         if (depth == 0 || validMovesAndDirs.Length == 0)
         {
-            int h;
-            if (isMaxPlayer) h = GetScore(board, player.color)[0];
-            else h = GetScore(board, player.color)[1];
-            //return new int[] { heuristic(board, player), 0, 0 };
-            return new int[] { h, 0, 0 };
+            return new int[] { heuristic(board, player), 0, 0 };
+
+            //int h;
+            //if (isMaxPlayer) h = GetScore(board, player.color)[0];
+            //else h = GetScore(board, player.color)[1];
+            //Console.WriteLine("SCORE: " + h + " isMax: " + isMaxPlayer);
+            //return new int[] { h, 0, 0 };
         }
         if (isMaxPlayer) return GetMinMaxSingle(true, validMovesAndDirs, player, board, alpha, beta, depth);
         else return GetMinMaxSingle(false, validMovesAndDirs, player, board, alpha, beta, depth);
@@ -118,24 +120,45 @@ static public int[] GetMinMaxSingle(bool isMaxPlayer, int[][] validMovesAndDirs,
         int[] move2 = new int[] { 0, 0, 0 };
         int[] m = new int[2];
         int[][] possibleMoves = FilterUniqueMoves(validMovesAndDirs);
+        //Console.WriteLine("Possible Moves:");
+        //foreach (var oneMove in possibleMoves)
+        //{
+        //    //Console.Write("[{0}] ", string.Join(", ", oneMove));
+        //    Console.Write("[{0}{1}] ", (char)(oneMove[0] + 65), (oneMove[1] + 1));
 
+        //}
+        //Console.WriteLine();
         if (isMaxPlayer) move2[(int)Move.score] = int.MinValue;
         else move2[(int)Move.score] = int.MaxValue;
 
         for (int i = 0; i < possibleMoves.Length; i++)
         {
+            //Console.WriteLine("-------For start-----------" + " depth: " + depth + " i: " + i);
             player.currentTurnCoords = possibleMoves[i];
             move2[1] = player.currentTurnCoords[0];
             move2[2] = player.currentTurnCoords[1];
+
+            //board.PrintBoard();
+            //Console.WriteLine("Chosen: [{0}{1}] ", (char)(move2[1] + 65), (move2[2] + 1));
 
             Board tempBoard = board.Clone();
             tempBoard.MakeMoveGetScore(player, validMovesAndDirs);
 
             // switchPlayer;
-            player.color = player.color.GetOpponent();
+            //player.color = player.color.GetOpponent();
+            IPlayer tempPlayer = (IPlayer) player.Clone();
+            tempPlayer.color = tempPlayer.color.GetOpponent();
+                //tempBoard.PrintBoard();
+            int[][] v = tempBoard.GetValidMovesList(tempPlayer.color);
+            //Console.WriteLine("Valid Moves:");
+            //foreach (var oneMove in v)
+            //{
+            //    Console.Write("[{0}] ", string.Join(", ", oneMove));
+            //    //Console.Write("[{0}{1}] ", (char)(oneMove[0] + 65), (oneMove[1] + 1));
 
-            if (isMaxPlayer) move2[(int)Move.score] = Math.Max(GetMinMaxOptimal(tempBoard, tempBoard.GetValidMovesList(player.color), player, alpha, beta, depth - 1, false)[(int)Move.score], move2[(int)Move.score]);
-            else move2[(int)Move.score] = Math.Min(GetMinMaxOptimal(tempBoard, tempBoard.GetValidMovesList(player.color), player, alpha, beta, depth - 1, true)[(int)Move.score], move2[(int)Move.score]);
+            //}
+            if (isMaxPlayer) move2[(int)Move.score] = Math.Max(GetMinMaxOptimal(tempBoard, tempBoard.GetValidMovesList(tempPlayer.color), tempPlayer, alpha, beta, depth - 1, false)[(int)Move.score], move2[(int)Move.score]);
+            else move2[(int)Move.score] = Math.Min(GetMinMaxOptimal(tempBoard, tempBoard.GetValidMovesList(tempPlayer.color), tempPlayer, alpha, beta, depth - 1, true)[(int)Move.score], move2[(int)Move.score]);
 
             if (isMaxPlayer)
             {
@@ -162,13 +185,14 @@ static public int[] GetMinMaxSingle(bool isMaxPlayer, int[][] validMovesAndDirs,
                 //Console.WriteLine("A= " + alpha + " B= " + beta + ". Pruning");
                 break;
             }
+            //Console.WriteLine("Move2 is [" + (char)(move2[1] + 65) + "" + (move2[2] + 1) + "]  score:" + move2[0] + ". MAX - " + isMaxPlayer);
             //Console.WriteLine("-------For end-----------" + " depth: " + depth + " i: " + i);
         }
 
-        //Console.WriteLine("So BestMove22 is" + (char)(move2[1] + 65) + ":" + (move2[2] + 1) + "  score:" + move2[0] + ". MAX - " + isMaxPlayer);
 
         move2[(int)Move.x] = m[0];
         move2[(int)Move.y] = m[1];
+        //Console.WriteLine("So BestMove22 is [" + (char)(move2[1] + 65) + "" + (move2[2] + 1) + "]  score:" + move2[0] + ". MAX - " + isMaxPlayer);
         return move2;
     }
 
@@ -292,27 +316,27 @@ static public int[] GetMinMaxSingle(bool isMaxPlayer, int[][] validMovesAndDirs,
         //    {-100,  20, -20, -20, -20, -20, 20,-100}
         //};
 
-        int[,] boardSquareWeights = new int[8, 8] {
-            { -99,  48, -8,  6,  6, -8, 48,-99},
-            {  48,  -8,-16,  3,  3,-16, -8, 48},
-            {  -8, -16,  4,  4,  4,  4,-16, -8},
-            {   6,   3,  4,  0,  0,  4,  3,  6},
-            {   6,   3,  4,  0,  0,  4,  3,  6},
-            {  -8, -16,  4,  4,  4,  4,-16, -8},
-            {  48,  -8,-16,  3,  3,-16, -8, 48},
-            { -99,  48, -8,  6,  6, -8, 48,-99}
-        };
-
         //int[,] boardSquareWeights = new int[8, 8] {
-        //    { -99,  8, -8,  6,  6, -8,  8,-99},
-        //    {   8, 48,-16,  3,  3,-16, 48,  8},
-        //    {  -8,-16,  4,  4,  4,  4,-16, -8},
-        //    {   6,  3,  4,  0,  0,  4,  3,  6},
-        //    {   6,  3,  4,  0,  0,  4,  3,  6},
-        //    {  -8,-16,  4,  4,  4,  4,-16, -8},
-        //    {   8, 48,-16,  3,  3,-16, 48,  8},
-        //    { -99,  8, -8,  6,  6, -8,  8,-99}
+        //    { -99,  48, -8,  6,  6, -8, 48,-99},
+        //    {  48,  -8,-16,  3,  3,-16, -8, 48},
+        //    {  -8, -16,  4,  4,  4,  4,-16, -8},
+        //    {   6,   3,  4,  0,  0,  4,  3,  6},
+        //    {   6,   3,  4,  0,  0,  4,  3,  6},
+        //    {  -8, -16,  4,  4,  4,  4,-16, -8},
+        //    {  48,  -8,-16,  3,  3,-16, -8, 48},
+        //    { -99,  48, -8,  6,  6, -8, 48,-99}
         //};
+
+        int[,] boardSquareWeights = new int[8, 8] {
+            { -99,  8, -8,  6,  6, -8,  8,-99},
+            {   8, 48,-16,  3,  3,-16, 48,  8},
+            {  -8,-16,  4,  4,  4,  4,-16, -8},
+            {   6,  3,  4,  0,  0,  4,  3,  6},
+            {   6,  3,  4,  0,  0,  4,  3,  6},
+            {  -8,-16,  4,  4,  4,  4,-16, -8},
+            {   8, 48,-16,  3,  3,-16, 48,  8},
+            { -99,  8, -8,  6,  6, -8,  8,-99}
+        };
 
         for (int y = 0; y < 8; y++)
         {
@@ -360,18 +384,18 @@ static public int[] GetMinMaxSingle(bool isMaxPlayer, int[][] validMovesAndDirs,
     static int heuristic(Board board, IPlayer player)
     {
         PieceEnum playerColor = player.color;
-        int result;
+        //int result;
         //switch (GetGamePhase(board))
         //{
         //    case GamePhase.Early:
         //        //return -1000 * GetCornerRatio(board, playerColor) + 50 * GetMobility(board, playerColor);
         //        //return 5 * boardHeuristic(board, player) + 50 * GetMobility(board, playerColor);
-        //        result = -1000 * GetCornerRatio(board, playerColor) + 10 * boardHeuristic(board, player) + 50 * GetMobility(board, playerColor);
+        //        result = -1000 * GetCornerRatio(board, playerColor) + 10 * boardHeuristic(board, player) + 100 * GetMobility(board, playerColor);
         //        break;
         //    case GamePhase.Mid:
         //        //return -1000 * GetCornerRatio(board, playerColor) + 20 * GetMobility(board, playerColor) - 10 * GetPieceCountRatio(board, playerColor) + 100 * GetParity(board);
         //        //return 5 * boardHeuristic(board, player) + 20 * GetMobility(board, playerColor) - 10 * GetPieceCountRatio(board, playerColor);// + 100 * GetParity(board);
-        //        result = -1000 * GetCornerRatio(board, playerColor) + 10 * boardHeuristic(board, player) + 20 * GetMobility(board, playerColor) - 10 * GetPieceCountRatio(board, playerColor);// + 100 * GetParity(board);
+        //        result = -1000 * GetCornerRatio(board, playerColor) + 10 * boardHeuristic(board, player) + 80 * GetMobility(board, playerColor) - 10 * GetPieceCountRatio(board, playerColor);// + 100 * GetParity(board);
         //        break;
         //    case GamePhase.Late:
         //    default:
@@ -380,12 +404,12 @@ static public int[] GetMinMaxSingle(bool isMaxPlayer, int[][] validMovesAndDirs,
         //        result = -1000 * GetCornerRatio(board, playerColor) + 10 * boardHeuristic(board, player) + 100 * GetMobility(board, playerColor) - 500 * GetPieceCountRatio(board, playerColor);// + 500 * GetParity(board);
         //        break;
         //}
-        //Console.WriteLine("Total: " + result);
-        ////return result;
+        ////Console.WriteLine("Total: " + result);
+        //return result;
         int boardH = boardHeuristic(board, player);
         int mobility = GetMobility(board, playerColor);
-        //Console.WriteLine("BoardH: " + boardH + ". MobilityH: " + mobility);
-        return boardH + 10 * mobility;
+        //Console.WriteLine("HH: " + (boardH + 10 * mobility) + " BoardH: " + boardH + ". MobilityH: " + mobility);
+        return boardH +  mobility;
         //return GetScore(board, playerColor);
     }
 
@@ -528,7 +552,7 @@ static public int[] GetMinMaxSingle(bool isMaxPlayer, int[][] validMovesAndDirs,
         }
         //return new double[] { b, w };
         //Console.WriteLine("PBScore: " + (w-b));
-        return new int[] { Math.Max(b, 0), Math.Max(w, 0) };
+        return new int[] { Math.Max(w, 0), Math.Max(b, 0) };
         //return b-w;
     }
 

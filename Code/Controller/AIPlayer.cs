@@ -35,17 +35,21 @@ public class AIPlayer : IPlayer
         else
         {
             //board.PrintBoard();
-            int[] goodMove = AI.GetAntiReversiMove(validMoves, board.Clone(), this.Clone());
+            int[] goodMove = AI.GetAntiReversiMove(validMoves, board.Clone(), (IPlayer) this.Clone());
             this.currentTurnCoords = goodMove;
             //Console.WriteLine("AI move: " + currentTurnCoords[0] + " " + currentTurnCoords[1]);
             Console.WriteLine((char)(currentTurnCoords[0] + 65) + "" + (currentTurnCoords[1] + 1));
             //board.PrintBoard();
         }
     }
-
-    public AIPlayer Clone() {
-        return new AIPlayer(this);
+    public object Clone()
+    {
+        return this.MemberwiseClone();
     }
+    //public AIPlayer Clone2()
+    //{
+    //    return new AIPlayer(this);
+    //}
 
 }
 

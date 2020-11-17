@@ -7,6 +7,12 @@ public class RandomPlayer : IPlayer
         this.color = color;
         this.score = 2;
     }
+    public RandomPlayer(IPlayer player)
+    {
+        this.color = player.color;
+        this.score = player.score;
+        this.currentTurnCoords = player.currentTurnCoords;
+    }
     public int score { get; set; }
 
     public PieceEnum color { get; set; }
@@ -26,4 +32,12 @@ public class RandomPlayer : IPlayer
             Console.WriteLine((char)(currentTurnCoords[0] + 65) + "" + (currentTurnCoords[1] + 1));
         }
     }
+    public object Clone()
+    {
+        return this.MemberwiseClone();
+    }
+    //public RandomPlayer Clone()
+    //{
+    //    return new RandomPlayer(this);
+    //}
 }
