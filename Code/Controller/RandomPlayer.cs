@@ -36,8 +36,4 @@ public class RandomPlayer : IPlayer
     {
         return this.MemberwiseClone();
     }
-    //public RandomPlayer Clone()
-    //{
-    //    return new RandomPlayer(this);
-    //}
 }

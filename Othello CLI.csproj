@@ -43,20 +43,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Code\Application\GameMaster.cs" />
-    <Compile Include="Code\Application\GameProperties.cs" />
-    <Compile Include="Code\Application\MainMenu.cs" />
     <Compile Include="Code\Controller\HumanPlayer.cs" />
-    <Compile Include="Code\Controller\PlayerController.cs" />
     <Compile Include="Code\Controller\RandomPlayer.cs" />
     <Compile Include="Code\Model\AI.cs" />
     <Compile Include="Code\Controller\AIPlayer.cs" />
     <Compile Include="Code\Model\Board.cs" />
-    <Compile Include="Code\Model\BoardSquare.cs" />
     <Compile Include="Code\Model\Enums.cs" />
     <Compile Include="Code\Model\Game.cs" />
     <Compile Include="Code\Model\IPlayer.cs" />
-    <Compile Include="Code\View\BoardSquareProperties.cs" />
-    <Compile Include="Code\View\BoardUpdate.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>

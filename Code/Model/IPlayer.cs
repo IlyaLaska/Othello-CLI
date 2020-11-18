@@ -7,5 +7,4 @@ public interface IPlayer: ICloneable
     int[] currentTurnCoords { get; set; }
 
     void UpdateMoves(int[][] possibleMoveCoords, Board board);
-    //IPlayer Clone();
 }

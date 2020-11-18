@@ -21,35 +21,20 @@ public class AIPlayer : IPlayer
 
     public void UpdateMoves(int[][] validMoves, Board board)
     {
-        //Console.WriteLine("AIPlayer, Your availible moves: ");
-        //foreach (var oneMove in validMoves)
-        //{
-        //    Console.WriteLine(((char)(oneMove[0] + 65)) + "" + (oneMove[1] + 1));
-        //    //Console.WriteLine("[{0}]", string.Join(", ", oneMove));
-
-        //}
         if (validMoves.Length == 0)
         {
             Console.WriteLine("pass");
         }
         else
         {
-            //board.PrintBoard();
             int[] goodMove = AI.GetAntiReversiMove(validMoves, board.Clone(), (IPlayer) this.Clone());
             this.currentTurnCoords = goodMove;
-            //Console.WriteLine("AI move: " + currentTurnCoords[0] + " " + currentTurnCoords[1]);
             Console.WriteLine((char)(currentTurnCoords[0] + 65) + "" + (currentTurnCoords[1] + 1));
-            //board.PrintBoard();
         }
     }
     public object Clone()
     {
         return this.MemberwiseClone();
     }
-    //public AIPlayer Clone2()
-    //{
-    //    return new AIPlayer(this);
-    //}
-
 }
 

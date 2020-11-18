@@ -20,8 +20,6 @@ public class Game
     public static event NextMoveEvent nextMoveEvent;
     public delegate void ScoreUpdatedEvent();
     public static event ScoreUpdatedEvent scoreUpdatedEvent;
-    //public delegate void SendPassEvent(PieceEnum player);
-    //public static event SendPassEvent sendPassEvent;
 
     public Game(IPlayer first, IPlayer second)
     {
@@ -41,11 +39,7 @@ public class Game
 
     public void PlayRound()
     {
-        //get coordinates of next move
-        //List<int[]> takenCoordsAndDirections = GetMoveFromPlayer();
         int beatPiecesCount = gameBoard.MakeMoveGetScore(currentPlayer, validMovesAndDirsForThisTurn);
-        //gameBoard.PrintBoard();
-        //Console.WriteLine("COUNT: " + beatPiecesCount);
         if (beatPiecesCount == 0) //skipped move
         {
             ChangePlayer();
@@ -54,7 +48,6 @@ public class Game
             nextMoveEvent?.Invoke();
             return;
         }
-        //int beatPiecesCount = gameBoard.UpdateBeatPieces(takenCoordsAndDirections, currentPlayer);
         UpdateScore(beatPiecesCount);
 
         ChangePlayer();
@@ -116,12 +109,6 @@ public class Game
 
         scoreUpdatedEvent?.Invoke();
     }
-
-    //private List<int[]> GetMoveFromPlayer()
-    //{
-    //    int[] selectedSquare = currentPlayer.currentTurnCoords;
-
-    //}
 
     public void SetBlackHole(int[] blackHoleCoords)
     {

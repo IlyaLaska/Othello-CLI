@@ -41,8 +41,4 @@ public class HumanPlayer : IPlayer
     {
         return this.MemberwiseClone();
     }
-    //public HumanPlayer Clone()
-    //{
-    //    return new HumanPlayer(this);
-    //}
 }
